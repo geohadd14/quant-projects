@@ -25,6 +25,30 @@ Until those two agree in your handwriting, the code below is just typing.
 import numpy as np
 
 
+# --- helpers -----------------------------------------------------------------
+# Shared by both pricers so the European and American paths cannot drift apart.
+
+def _payoff(S, K, kind):
+    """Intrinsic value at stock price S. Works on a scalar or an array."""
+    if kind == "call":
+        return np.maximum(S - K, 0.0)
+    if kind == "put":
+        return np.maximum(K - S, 0.0)
+    raise ValueError(f"kind must be 'call' or 'put', got {kind!r}")
+
+
+def _tree_setup(T, r, sigma, N, q):
+    """Return (u, d, p, discount_factor_for_one_step)."""
+    if N < 1:
+        raise ValueError("N must be at least 1")
+    if T <= 0:
+        raise ValueError("T must be positive")
+    dt = T / N
+    u, d = crr_parameters(sigma, dt)
+    p = risk_neutral_prob(r, q, dt, u, d)
+    return u, d, p, float(np.exp(-r * dt))
+
+
 def crr_parameters(sigma, dt):
     """Return (u, d): the up and down multipliers for one step of length dt.
 
@@ -41,7 +65,12 @@ def crr_parameters(sigma, dt):
 
     Hull ch 13, eq. (13.15)-(13.16).
     """
-    raise NotImplementedError
+    if sigma <= 0:
+        raise ValueError("sigma must be positive")
+    if dt <= 0:
+        raise ValueError("dt must be positive")
+    u = np.exp(sigma * np.sqrt(dt))
+    return u, 1.0 / u
 
 
 def risk_neutral_prob(r, q, dt, u, d):
@@ -70,7 +99,20 @@ def risk_neutral_prob(r, q, dt, u, d):
 
     Hull ch 13, eq. (13.5).
     """
-    raise NotImplementedError
+    if u <= d:
+        raise ValueError(f"need u > d, got u={u} d={d}")
+    growth = np.exp((r - q) * dt)
+    p = (growth - d) / (u - d)
+    # p outside (0, 1) means the riskless growth factor sits outside the range
+    # the stock can reach in one step, so one side of the trade is free money.
+    # Refuse, rather than return a number that prices without complaining.
+    if not 0.0 < p < 1.0:
+        raise ValueError(
+            f"arbitrage in inputs: p={p:.6f} is not in (0, 1). "
+            f"Need d < exp((r-q)dt) < u, got d={d:.6f} "
+            f"exp={growth:.6f} u={u:.6f}"
+        )
+    return float(p)
 
 
 def terminal_prices(S0, u, d, N):
@@ -83,7 +125,8 @@ def terminal_prices(S0, u, d, N):
     Build this as a numpy array, not a Python loop appending to a list - the
     whole tree should stay vectorised so N = 5000 is still fast.
     """
-    raise NotImplementedError
+    j = np.arange(N + 1)           # number of up moves, 0 to N
+    return S0 * u**j * d**(N - j)  # j ascending gives price ascending
 
 
 def european_price(S0, K, T, r, sigma, N, kind="call", q=0.0):
@@ -105,7 +148,14 @@ def european_price(S0, K, T, r, sigma, N, kind="call", q=0.0):
     slices line up that way before you use it - v[1:] is the up-child and
     v[:-1] is the down-child of each node at the level below.
     """
-    raise NotImplementedError
+    u, d, p, disc = _tree_setup(T, r, sigma, N, q)
+    v = _payoff(terminal_prices(S0, u, d, N), K, kind)
+    # Roll the whole level back one step at a time. v[1:] is the up-child of
+    # each node below, v[:-1] the down-child, so this single line is the
+    # discounted risk-neutral expectation applied to every node at once.
+    for _ in range(N):
+        v = disc * (p * v[1:] + (1.0 - p) * v[:-1])
+    return float(v[0])
 
 
 def american_price(S0, K, T, r, sigma, N, kind="put", q=0.0):
@@ -132,4 +182,14 @@ def american_price(S0, K, T, r, sigma, N, kind="put", q=0.0):
     prices the American call higher, the bug is in the comparison, not in the
     theory. Hull ch 11.5 has the argument.
     """
-    raise NotImplementedError
+    u, d, p, disc = _tree_setup(T, r, sigma, N, q)
+    v = _payoff(terminal_prices(S0, u, d, N), K, kind)
+    # Identical to the European loop plus one comparison: at every node take
+    # the better of holding on (continuation) and exercising now (intrinsic).
+    # That single max is what early exercise means, and it is why the American
+    # price can never fall below the European one.
+    for n in range(N - 1, -1, -1):
+        continuation = disc * (p * v[1:] + (1.0 - p) * v[:-1])
+        intrinsic = _payoff(terminal_prices(S0, u, d, n), K, kind)
+        v = np.maximum(continuation, intrinsic)
+    return float(v[0])

@@ -3,14 +3,17 @@
 Derivatives pricing written from the definitions in Python. Each folder is a self
 contained project: its own maths, its own tests, its own README.
 
-![Option payoff and strategy diagrams](01_option_payoffs/payoff_diagrams.png)
+![Binomial tree price converging to the Black-Scholes value](02_binomial_tree/convergence.png)
+
+A Cox Ross Rubinstein tree walking into the Black-Scholes value as the step count grows.
+Two derivations that share no code arriving at the same number is the point of the repo.
 
 ## Projects
 
 | Folder | What it does | State |
 |---|---|---|
 | [`01_option_payoffs`](01_option_payoffs/) | Payoff and profit functions for calls, puts, straddles, strangles and spreads, plus the strategy diagrams above | Tests passing |
-| [`02_binomial_tree`](02_binomial_tree/) | Cox Ross Rubinstein tree for European and American options, with a convergence check against Black-Scholes | In progress |
+| [`02_binomial_tree`](02_binomial_tree/) | Cox Ross Rubinstein tree for European and American options, with a convergence check against Black-Scholes | Tests passing |
 
 ## Running it
 
