@@ -12,7 +12,7 @@ Two derivations that share no code arriving at the same number is the point of t
 
 | Folder | What it does | State |
 |---|---|---|
-| [`01_option_payoffs`](01_option_payoffs/) | Payoff and profit functions for calls, puts, straddles, strangles and spreads, plus the strategy diagrams above | Tests passing |
+| [`01_option_payoffs`](01_option_payoffs/) | Payoff and profit functions for calls, puts, straddles, strangles and spreads, with the strategy diagrams | Tests passing |
 | [`02_binomial_tree`](02_binomial_tree/) | Cox Ross Rubinstein tree for European and American options, with a convergence check against Black-Scholes | Tests passing |
 
 ## Running it
