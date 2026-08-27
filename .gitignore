@@ -22,3 +22,7 @@ desktop.ini
 *.docx
 .env
 *.key
+
+# Agent config, not part of the project
+.claude/
+CLAUDE.md
