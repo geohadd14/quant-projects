@@ -52,16 +52,19 @@ def _tree_setup(T, r, sigma, N, q):
 def crr_parameters(sigma, dt):
     """Return (u, d): the up and down multipliers for one step of length dt.
 
-    Cox-Ross-Rubinstein pick u and d so that the tree's log-returns have the
-    same variance as the continuous model over each step, and so the tree
-    recombines symmetrically:
+    Cox-Ross-Rubinstein pick u and d so the tree's log-returns have the same
+    variance as the continuous model over each step:
 
         u = exp(sigma * sqrt(dt))
         d = 1 / u
 
-    Why d = 1/u matters: an up move followed by a down move lands exactly back
-    at S0, so the tree RECOMBINES. After N steps there are N+1 distinct prices
-    rather than 2^N. That is the whole reason this is computationally sane.
+    The tree recombines for ANY u and d, because up-then-down and down-then-up
+    both land on S0 * u * d -- multiplication commutes. That is what gives N+1
+    terminal nodes after N steps instead of 2^N, and it is the whole reason
+    this is computationally sane.
+
+    What d = 1/u adds is symmetry, not recombination: u * d = 1, so up-then-down
+    returns exactly to S0 and the grid of log-prices stays centred on log(S0).
 
     Hull ch 13, eq. (13.15)-(13.16).
     """
