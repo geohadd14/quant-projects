@@ -19,7 +19,7 @@ from binomial import (
 )
 
 
-# --------------------------------------------------------------- parameters --
+# parameters 
 
 def test_crr_up_and_down_are_reciprocal():
     """d = 1/u is what makes the tree recombine."""
@@ -40,7 +40,7 @@ def test_higher_vol_gives_a_wider_tree():
     assert u_wild > u_calm
 
 
-# ------------------------------------------------------ risk-neutral measure --
+#  risk-neutral measure 
 
 def test_risk_neutral_prob_hand_computed():
     # r = 0, u = 1.25, d = 0.8  ->  p = (1 - 0.8) / (1.25 - 0.8) = 0.4444...
@@ -59,7 +59,7 @@ def test_arbitrage_inputs_are_rejected():
         risk_neutral_prob(r=0.50, q=0.0, dt=1.0, u=1.05, d=0.95)
 
 
-# ------------------------------------------------------------ terminal nodes --
+#  terminal nodes 
 
 def test_terminal_prices_recombine():
     S = terminal_prices(S0=100.0, u=1.25, d=0.8, N=2)
@@ -71,7 +71,7 @@ def test_terminal_prices_count():
     assert len(terminal_prices(S0=100.0, u=1.1, d=1 / 1.1, N=50)) == 51
 
 
-# ------------------------------------------------------------------- pricing --
+#  pricing 
 
 def test_one_step_call_hand_computed():
     """S0=100, K=100, u=1.25, d=0.8, r=0.
@@ -116,7 +116,7 @@ def test_call_price_increases_with_maturity():
     assert european_price(**args, T=2.0) > european_price(**args, T=0.5)
 
 
-# ------------------------------------------------------- American / exercise --
+#  American / exercise 
 
 def test_american_put_beats_european_put():
     args = dict(S0=90.0, K=100.0, T=1.0, r=0.05, sigma=0.2, N=500)
