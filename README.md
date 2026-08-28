@@ -1,7 +1,7 @@
 # quant-projects
 
 Derivatives pricing written from the definitions in Python. Each folder is a self
-contained project: its own maths, its own tests, its own README.
+contained project.
 
 ![Binomial tree price converging to the Black-Scholes value](02_binomial_tree/convergence.png)
 
@@ -24,7 +24,7 @@ pip install -r requirements.txt
 python -m pytest
 ```
 
-Every test runs offline. Nothing here reaches the network or needs a data feed.
+Nothing here reaches the network or needs a data feed.
 
 ## How these are built
 
@@ -38,8 +38,7 @@ The point of the repo is the reasoning, not the line count.
   ones the model has to satisfy no matter what: put call parity, a tree converging to
   the closed form value as the step count grows, an American put worth more than a
   European one.
-- **The README of each project explains the model**, not just the API. If the maths is
-  not in the README, the project is not finished.
+- **The README of each project explains the model.**
 
 ## Reading behind it
 
